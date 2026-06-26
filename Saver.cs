@@ -37,4 +37,5 @@ public class Saver<T> where T : class
 public static class SaverExtensions
 {
     public static Saver<string[]> Urls = new Saver<string[]>("urls.txt");
+    public static Saver<List<ProductInfo>> Products = new Saver<List<ProductInfo>>("products.txt");
 }

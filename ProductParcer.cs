@@ -8,10 +8,22 @@ public class ProductParcer
     public async Task<IBrowserContext> CreateBrowserContext(bool headless)
     {
         var playwright = await Playwright.CreateAsync();
+        var args = new List<string> 
+        { 
+            "--disable-blink-features=AutomationControlled", 
+            "--no-sandbox", 
+            "--disable-extensions" 
+        };
+
+        if (!headless)
+        {
+            args.Add("--remote-debugging-port=9222");
+            args.Add("--remote-debugging-address=0.0.0.0");
+        }
         var browser = await playwright.Chromium.LaunchPersistentContextAsync(Path.Combine(Directory.GetCurrentDirectory(),"Resources","PlaywrightData"), new BrowserTypeLaunchPersistentContextOptions()
         {
             Headless = headless,
-            Args = new[] { "--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-extensions",(!headless ? "--remote-debugging-port=9222 --remote-debugging-address=0.0.0.0" : "") }
+            Args = args 
         });
         return browser;
     }

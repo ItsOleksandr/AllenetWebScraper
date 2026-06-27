@@ -5,7 +5,7 @@ namespace AllegroParse;
 
 public class ProductParcer
 {
-    public async Task<ParseResponse> Parse(string[] urls,int startIndex = 0)
+    public async Task<ParseResponse> Parse(string[] urls,bool isUserStarts,int startIndex = 0)
     {
         var playwright = await Playwright.CreateAsync();
         var browser = await playwright.Chromium.LaunchPersistentContextAsync(Path.Combine(Directory.GetCurrentDirectory(),"Resources","PlaywrightData"), new BrowserTypeLaunchPersistentContextOptions()
@@ -25,7 +25,7 @@ public class ProductParcer
             Console.WriteLine($"Url: {url}\n");
             try
             {
-                product = await extracter.Extract(url);
+                product = await extracter.Extract(url,isUserStarts);
             }
             catch (InvalidProductException e)
             {

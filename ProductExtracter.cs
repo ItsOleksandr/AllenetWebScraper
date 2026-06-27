@@ -12,7 +12,7 @@ public class ProductExtracter
         _page = page;
     }
     
-    public async Task<ProductInfo> Extract(string url)
+    public async Task<ProductInfo> Extract(string url,bool isUserStarts)
     {
         await _page.GotoAsync(url, _gotoOptions);
         var acceptCookieButton = _page.GetByText("Akceptuj wszystko");
@@ -25,7 +25,6 @@ public class ProductExtracter
         var unAuthButton = _page.GetByText("Zaloguj się / Zarejestruj").First;
         if (await unAuthButton.IsVisibleAsync())
         {
-            Console.WriteLine("Please authorize!!!!");
             await unAuthButton.ClickAsync();
             await Task.Delay(4000);
             await _page.Locator("#rememberme").SetCheckedAsync(true);
@@ -69,8 +68,7 @@ public class ProductExtracter
                 if (href == null) continue;
                 categoriesUrl.Add(href);
             }
-
-            if (IsBlackListCategory(categoriesUrl)) throw new InvalidProductException("Category is blacklisted");
+            
             return new ProductInfo
             {
                 Price = decimal.Parse(price, CultureInfo.InvariantCulture), Name = name, Count = int.Parse(countString),
@@ -84,41 +82,35 @@ public class ProductExtracter
         catch (Exception e)
         {
             Console.WriteLine(e);
-            do
+            if (isUserStarts)
             {
-                Console.WriteLine("Skip (S) / Delete (D) / Again (A) / Break (B)");
-                var entered = Console.ReadLine()?.Trim() ?? "";
-                if (entered == "s")
+                do
                 {
-                    throw new ProductAlreadyHandledException();
-                }
-                else if (entered == "d")
-                {
-                    throw new InvalidProductException();
-                }
-                else if (entered == "a")
-                {
-                    return await Extract(url);
-                }
-                else if (entered == "b")
-                {
-                    throw new ParserException();
-                }
-            } while (true);
-        }
-    }
-    
-    public bool IsBlackListCategory(IEnumerable<string> categoriesUrls)
-    {
-        foreach (string categoriesUrl in categoriesUrls)
-        {
-            foreach (string blackListUrl in SaverExtensions.CategoriesBlackList.Value)
+                    Console.WriteLine("Skip (S) / Delete (D) / Again (A) / Break (B)");
+                    var entered = Console.ReadLine()?.Trim() ?? "";
+                    if (entered == "s")
+                    {
+                        throw new ProductAlreadyHandledException();
+                    }
+                    else if (entered == "d")
+                    {
+                        throw new InvalidProductException();
+                    }
+                    else if (entered == "a")
+                    {
+                        return await Extract(url,isUserStarts);
+                    }
+                    else if (entered == "b")
+                    {
+                        throw new ParserException();
+                    }
+                } while (true);
+            }
+            else
             {
-                if(categoriesUrl.Contains(blackListUrl)) return true;
+                throw new ProductAlreadyHandledException();
             }
         }
-
-        return false;
     }
 }
 

@@ -36,11 +36,10 @@ public class Saver<T> where T : class
 
 public static class SaverExtensions
 {
-    public static Saver<List<string>> Urls = new Saver<List<string>>("urls.txt");
-    public static Saver<List<string>> UrlsBlackList = new Saver<List<string>>("urls_black_list.txt");
-    public static Saver<List<string>> CategoriesBlackList = new Saver<List<string>>("categories_black_list.txt");
-    // public static Saver<List<ProductInfo>> Products = new Saver<List<ProductInfo>>("products.txt");
-    public static Saver<Dictionary<string,ProductInfo>> Products = new Saver<Dictionary<string,ProductInfo>>("products_dictionary.txt");
+    public static readonly Saver<List<string>> Urls = new Saver<List<string>>("urls.txt");
+    public static readonly Saver<List<string>> UrlsBlackList = new Saver<List<string>>("urls_black_list.txt");
+    public static readonly Saver<Dictionary<string,ProductInfo>> Products = new Saver<Dictionary<string,ProductInfo>>("products_dictionary.txt");
+    public static readonly Saver<CSVOptions> CSVOptions = new Saver<CSVOptions>("csv_options.txt");
     
     
 }

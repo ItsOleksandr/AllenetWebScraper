@@ -7,4 +7,5 @@ public class ProductInfo
     public string Name { get; set; }
     public int Count { get; set; }
     public string EAN { get; set; }
+    public string[] CategoriesUrls { get; set; } = Array.Empty<string>();
 }

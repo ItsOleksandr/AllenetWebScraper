@@ -1,50 +1,46 @@
 ﻿using AllegroParse;
-using Microsoft.Playwright;
 
-var products = SaverExtensions.Products.Value;
-Console.WriteLine($"Already handled: {products.Count}");
-Console.WriteLine($"With ean: {products.Count(x => x.EAN != "—")}");
 
-return;
-
-var urls = SaverExtensions.Urls.Value;
-var playwright = await Playwright.CreateAsync();
-var browser = await playwright.Chromium.LaunchPersistentContextAsync(Path.Combine(Directory.GetCurrentDirectory(),"Resources","PlaywrightData"), new BrowserTypeLaunchPersistentContextOptions()
+Console.WriteLine("Urls: Saved (s) / NewParse (n)");
+bool needParse = Console.ReadLine()?.Trim() == "n";
+List<string> urls;
+if (needParse)
 {
-    Headless = false,
-    Args = new[] { "--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-extensions", }
-});
-var page = await browser.NewPageAsync();
-
-ProductExtracter extracter = new ProductExtracter(page);
-SaverExtensions.Products.Value.Capacity = urls.Length;
-int startIndex = SaverExtensions.Products.Value.Count;
-
-for(int i = startIndex-1; i < urls.Length; i++)
-{
-    var url = urls[i];
-    ProductInfo product;
-    try
-    { 
-        product = await extracter.Extract(url);
-    }
-    catch (InvalidProductException)
-    {
-        var urlsFile = SaverExtensions.Urls.Value;
-        var list = urlsFile.ToList();
-        list.Remove(url);
-        SaverExtensions.Urls.Value = list.ToArray();
-        SaverExtensions.Urls.Write();
-        Console.WriteLine($"Invalid product: {url}");
-        continue;
-    }
-    catch(ProductAlreadyHandledException)
-    {
-        continue;
-    }
-    product.Url = url;
-    SaverExtensions.Products.Value.Add(product);
-    SaverExtensions.Products.Write();
-    Console.WriteLine($"Url: {product.Url}\nHandled {i} / {urls.Length}\n");
+    SiteMapExtracter siteMapExtracter = new SiteMapExtracter();
+    urls = await siteMapExtracter.ExtractFromUrls("https://allenett.pl/product-sitemap1.xml","https://allenett.pl/product-sitemap2.xml","https://allenett.pl/product-sitemap3.xml","https://allenett.pl/product-sitemap4.xml");
 }
-await browser.CloseAsync();
+else
+{
+    urls = SaverExtensions.Urls.Value;
+}
+Console.WriteLine($"Urls: {urls.Count}, Start from?(0-{urls.Count})");
+int startIndex = int.Parse(Console.ReadLine()??"0");
+
+ProductParcer productParcer = new ProductParcer();
+
+var responseParsing = await productParcer.Parse(urls.ToArray(),startIndex);
+Console.WriteLine($"Black urls:{responseParsing.BlackListUrls.Count}\nProducts:{responseParsing.Products.Count}");
+Console.WriteLine("need save ? (y/n)");
+var entered = Console.ReadLine() ?? "";
+if (entered.ToLower() == "y")
+{
+    foreach (var product in responseParsing.Products.Values)
+    {
+        SaverExtensions.Products.Value[product.Url] = product;
+    }
+    SaverExtensions.Products.Write();
+    
+    var blackList = SaverExtensions.UrlsBlackList.Value;
+    blackList.AddRange(responseParsing.BlackListUrls);
+    blackList = blackList.Distinct().ToList();
+    SaverExtensions.UrlsBlackList.Value = blackList;
+    SaverExtensions.UrlsBlackList.Write();
+    
+    urls.RemoveAll(x => responseParsing.BlackListUrls.Contains(x));
+    SaverExtensions.Urls.Value = urls;
+    SaverExtensions.Urls.Write();
+}
+else
+{
+    
+}

@@ -3,14 +3,17 @@ namespace AllegroParse;
 
 public class SiteMapExtracter
 {
-    public async Task<string[]> ExtractFromUrls(params string[] urls)
+    public async Task<List<string>> ExtractFromUrls(params string[] urls)
     {
         List<string> mappedUrls = new List<string>();
         foreach (var url in urls)
         {
             mappedUrls.AddRange(await ExtractFromUrl(url));
         }
-        return mappedUrls.ToArray();
+        var uniqueUrls = mappedUrls.Distinct().ToList(); 
+        uniqueUrls.RemoveAll(x=>SaverExtensions.UrlsBlackList.Value.Contains(x));
+        
+        return uniqueUrls;
     }
     
     public async Task<string[]> ExtractFromUrl(string url)

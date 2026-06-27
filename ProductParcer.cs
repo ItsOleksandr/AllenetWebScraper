@@ -19,12 +19,9 @@ public class ProductParcer
             args.Add("--remote-debugging-port=9222");
             args.Add("--remote-debugging-address=0.0.0.0");
         }
-        #if !DEBUG
         string extensionPath = Path.Combine(Directory.GetCurrentDirectory(),"Resources","nord_vpn");
         args.Add($"--disable-extensions-except={extensionPath}");
         args.Add($"--load-extension={extensionPath}");
-       
-        #endif
         var browser = await playwright.Chromium.LaunchPersistentContextAsync(Path.Combine(Directory.GetCurrentDirectory(),"Resources","PlaywrightData"), new BrowserTypeLaunchPersistentContextOptions()
         {
             Headless = headless,

@@ -5,14 +5,20 @@ namespace AllegroParse;
 
 public class ProductParcer
 {
-    public async Task<ParseResponse> Parse(string[] urls,bool isUserStarts,int startIndex = 0)
+    public async Task<IBrowserContext> CreateBrowserContext(bool headless)
     {
         var playwright = await Playwright.CreateAsync();
         var browser = await playwright.Chromium.LaunchPersistentContextAsync(Path.Combine(Directory.GetCurrentDirectory(),"Resources","PlaywrightData"), new BrowserTypeLaunchPersistentContextOptions()
         {
-            Headless = false,
-            Args = new[] { "--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-extensions", }
+            Headless = headless,
+            Args = new[] { "--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-extensions" }
         });
+        return browser;
+    }
+    
+    public async Task<ParseResponse> Parse(string[] urls,bool isUserStarts,int startIndex = 0)
+    {
+        var browser = await CreateBrowserContext(!isUserStarts);
         var page = await browser.NewPageAsync();
         
         ProductExtracter extracter = new ProductExtracter(page);

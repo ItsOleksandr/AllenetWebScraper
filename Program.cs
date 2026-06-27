@@ -1,5 +1,17 @@
 ﻿using AllegroParse;
 
+if (args.Contains("--configure-browser"))
+{
+    Console.WriteLine("Starting browser ...");
+    ProductParcer productParcerConfigure = new ProductParcer();
+    var configureBrowser = await productParcerConfigure.CreateBrowserContext(false);
+    Console.WriteLine("Browser started");
+    Console.WriteLine("Press any key to exit");
+    Console.ReadKey();
+    await configureBrowser.CloseAsync();
+    return;
+}
+
 bool isUser = !args.Contains("--no-console");
 bool needParse;
 if (isUser)

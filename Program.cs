@@ -5,6 +5,7 @@ if (args.Contains("--configure-browser"))
     Console.WriteLine("Starting browser ...");
     ProductParcer productParcerConfigure = new ProductParcer();
     var configureBrowser = await productParcerConfigure.CreateBrowserContext(false);
+    await configureBrowser.NewPageAsync();
     Console.WriteLine("Browser started");
     Console.WriteLine("Press any key to exit");
     Console.ReadKey();

@@ -11,26 +11,41 @@ public class Saver<T> where T : class
     public Saver(string fileName)
     {
         _filePath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", fileName);
-        try
-        {
-            Value = Read();
-        }
-        catch (Exception e) when(e is JsonException or FileNotFoundException)
-        {
-            Value = Activator.CreateInstance<T>();
-        }
+        Value = Read();
+        
     }
     
     public void Write()
     {
-        var content = JsonSerializer.Serialize(Value);
-        File.WriteAllText(_filePath, content);
+        try
+        {
+            var content = JsonSerializer.Serialize(Value);
+            File.WriteAllText(_filePath, content);
+        }
+        catch(DirectoryNotFoundException)
+        {
+            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Resources"));
+            Write();
+        }
     }
 
     public T Read()
     {
-        var content = File.ReadAllText(_filePath);
-        return JsonSerializer.Deserialize<T>(content) ?? throw new JsonException("Invalid JSON");
+        try
+        {
+            var content = File.ReadAllText(_filePath);
+            return JsonSerializer.Deserialize<T>(content) ?? throw new JsonException("Invalid JSON");
+        }
+        catch (Exception e) when (e is JsonException or FileNotFoundException)
+        {
+            Value = Activator.CreateInstance<T>();
+            return Value;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Resources"));
+            return Read();
+        }
     }
 }
 

@@ -11,8 +11,7 @@ public class ProductParcer
         var args = new List<string> 
         { 
             "--disable-blink-features=AutomationControlled", 
-            "--no-sandbox", 
-            "--disable-extensions" 
+            "--no-sandbox"
         };
 
         if (!headless)

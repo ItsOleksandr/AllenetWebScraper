@@ -126,6 +126,8 @@ public class ProductExtracter
 
                 await _page.Locator("#rememberme").SetCheckedAsync(true);
                 await _page.GetByText("Captcha solved!").WaitForAsync();
+                await MoveMouseInCircleAsync(_page, 400, 300, 100,60,2);
+                await Task.Delay(1500);
                 await _page.GetByText("Zaloguj się").First.ClickAsync();
                 await Task.Delay(2000);
                 await _page.GotoAsync(productUrl, _gotoOptions);
@@ -139,6 +141,22 @@ public class ProductExtracter
         }
 
         throw new MemberAccessException("Can`t log in");
+    }
+    
+    private async Task MoveMouseInCircleAsync(IPage page, float centerX, float centerY,
+        float radius, int steps = 60, int loops = 1)
+    {
+        for (int loop = 0; loop < loops; loop++)
+        {
+            for (int i = 0; i <= steps; i++)
+            {
+                double angle = 2 * Math.PI * i / steps;
+                float x = centerX + radius * (float)Math.Cos(angle);
+                float y = centerY + radius * (float)Math.Sin(angle);
+                await page.Mouse.MoveAsync(x, y);
+                await page.WaitForTimeoutAsync(10);
+            }
+        }
     }
 }
 

@@ -1,5 +1,11 @@
 ﻿using AllegroParse;
 
+if (args.Contains("--rebuild-csv"))
+{
+    CSVMaker.MakeCSV(SaverExtensions.Products.Value.Values.ToList(),SaverExtensions.CSVOptions.Value);
+    return;
+}
+
 if (args.Contains("--configure-browser"))
 {
     Console.WriteLine("Starting browser ...");
@@ -87,19 +93,7 @@ if (needSave)
     SaverExtensions.Urls.Value = urls;
     SaverExtensions.Urls.Write();
 
-    var csvOptions = SaverExtensions.CSVOptions.Value;
-    var products = SaverExtensions.Products.Value.Values;
-    var filteredProducts = products
-        .Where(x => x.CategoriesUrls
-            .Any(categoryUrl => csvOptions.CategoriesBlackList
-                .Any(categoryUrl
-                    .Contains)) 
-                    && x.Count >= csvOptions.MinimalProductCount
-                    && x.Price >= csvOptions.MinimalPrice)
-        .ToList();
-    filteredProducts.ForEach(x=>x.Price *= csvOptions.MultiplierPrice);
-    
-    CSVMaker.GetCSV(filteredProducts);
+   CSVMaker.MakeCSV(responseParsing.Products.Values.ToList(),SaverExtensions.CSVOptions.Value);
 }
 else
 {

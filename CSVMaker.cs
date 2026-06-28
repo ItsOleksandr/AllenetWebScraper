@@ -9,12 +9,13 @@ public static class CSVMaker
     {
         var csvOptions = SaverExtensions.CSVOptions.Value;
         var filteredProducts = products
-            .Where(x => x.CategoriesUrls
+            .Where(x => !x.CategoriesUrls
                             .Any(categoryUrl => csvOptions.CategoriesBlackList
                                 .Any(categoryUrl
                                     .Contains)) 
                         && x.Count >= csvOptions.MinimalProductCount
-                        && x.Price >= csvOptions.MinimalPrice)
+                        && x.Price >= csvOptions.MinimalPrice
+                        && !x.EAN.Contains("—"))
             .ToList();
         filteredProducts.ForEach(x=>x.Price *= csvOptions.MultiplierPrice);
     

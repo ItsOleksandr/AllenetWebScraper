@@ -1,6 +1,5 @@
 ﻿using AllegroParse;
 
-SaverExtensions.Creaditails.Value = new AllenetCreditails() { Login = "maxigroup23@gmail.com", Password = "Mwt!v4zsvuYJBqi" };
 if (args.Contains("--configure-browser"))
 {
     Console.WriteLine("Starting browser ...");
@@ -20,8 +19,9 @@ bool loadLastSession;
 if (isUser)
 {
     Console.WriteLine("Urls: Saved (s) / NewParse (n) / Load last session (l)");
-    needParse = Console.ReadLine()?.Trim() == "n";
-    loadLastSession = Console.ReadLine()?.Trim() == "l";
+    var mode = Console.ReadLine()?.Trim() ?? "";
+    needParse = mode == "n";
+    loadLastSession = mode == "l";
 }
 else
 { 

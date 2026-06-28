@@ -125,7 +125,7 @@ public class ProductExtracter
                 await password.PressSequentiallyAsync(SaverExtensions.Creaditails.Value.Password, pressOptions);
 
                 await _page.Locator("#rememberme").SetCheckedAsync(true);
-                
+                await _page.GetByText("Captcha solved!").WaitForAsync();
                 await _page.GetByText("Zaloguj się").First.ClickAsync();
                 await Task.Delay(2000);
                 await _page.GotoAsync(productUrl, _gotoOptions);

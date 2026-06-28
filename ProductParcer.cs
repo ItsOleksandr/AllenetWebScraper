@@ -27,6 +27,7 @@ public class ProductParcer
             Headless = headless,
             Args = args 
         });
+        
         return browser;
     }
     

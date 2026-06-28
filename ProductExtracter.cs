@@ -106,7 +106,7 @@ public class ProductExtracter
         }
     }
 
-    public async Task LogIn(string productUrl)
+    private async Task LogIn(string productUrl)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -125,26 +125,69 @@ public class ProductExtracter
                 await password.PressSequentiallyAsync(SaverExtensions.Creaditails.Value.Password, pressOptions);
 
                 await _page.Locator("#rememberme").SetCheckedAsync(true);
-                
 
-                var frame = _page.Frames.FirstOrDefault(x => x.Url.Contains("cloudflare.com"));
-                if (frame != null)
-                {
-                    var captcha = frame.Locator("input[type='checkbox']");
-                    if (await captcha.IsVisibleAsync())
-                    {
-                        await captcha.ClickAsync();
-                    }
-                }
+                await CaptchaSolve();
+                
                 await _page.GetByText("Zaloguj się").First.ClickAsync();
                 await Task.Delay(2000);
                 await _page.GotoAsync(productUrl, _gotoOptions);
                 await Task.Delay(2000);
-                if (!await unAuthButton.IsVisibleAsync()) break;
+                if (!await unAuthButton.IsVisibleAsync()) return;
+            }
+            else
+            {
+                return;
             }
         }
 
         throw new MemberAccessException("Can`t log in");
+    }
+
+    private async Task CaptchaSolve()
+    {
+        var frame = _page.Frames.FirstOrDefault(x => x.Url.Contains("cloudflare.com"));
+        
+        if (frame != null)
+        {
+            var captcha = frame.Locator("body");
+            if (await captcha.IsVisibleAsync())
+            {
+                await MoveMouseInsideElement(captcha, _page);
+            }
+            
+            LocatorWaitForOptions options = new LocatorWaitForOptions() { State = WaitForSelectorState.Visible, Timeout = 10000};
+            var waitForSuccess = frame.Locator("circle").WaitForAsync(options);
+            var waitForInput = frame.Locator("input[type='checkbox']").WaitForAsync(options);
+            
+            var firstFinished = await Task.WhenAny(waitForInput, waitForSuccess);
+            if (firstFinished == waitForSuccess)
+            {
+                return;
+            }
+            else
+            {
+                await waitForInput;
+                await frame.Locator("input[type='checkbox']").ClickAsync();
+                await Task.Delay(2000);
+            }
+            
+            
+        }
+    }
+
+    private async Task MoveMouseInsideElement(ILocator element, IPage page)
+    {
+        var box = await element.BoundingBoxAsync();
+        if (box is null) return;
+
+        var rnd = new Random();
+        for (int i = 0; i < 5; i++)
+        {
+            float x = box.X + (float)rnd.NextDouble() * box.Width;
+            float y = box.Y + (float)rnd.NextDouble() * box.Height;
+            await page.Mouse.MoveAsync(x, y, new MouseMoveOptions { Steps = 10 });
+            await page.WaitForTimeoutAsync(100);
+        }
     }
 }
 

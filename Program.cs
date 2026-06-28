@@ -1,5 +1,6 @@
 ﻿using AllegroParse;
 
+SaverExtensions.Creaditails.Value = new AllenetCreditails() { Login = "maxigroup23@gmail.com", Password = "Mwt!v4zsvuYJBqi" };
 if (args.Contains("--configure-browser"))
 {
     Console.WriteLine("Starting browser ...");
@@ -15,14 +16,17 @@ if (args.Contains("--configure-browser"))
 
 bool isUser = !args.Contains("--no-console");
 bool needParse;
+bool loadLastSession;
 if (isUser)
 {
-    Console.WriteLine("Urls: Saved (s) / NewParse (n)");
+    Console.WriteLine("Urls: Saved (s) / NewParse (n) / Load last session (l)");
     needParse = Console.ReadLine()?.Trim() == "n";
+    loadLastSession = Console.ReadLine()?.Trim() == "l";
 }
 else
 { 
     needParse = true;
+    loadLastSession = false;
 }
 Console.WriteLine("Start parsing ...");
 
@@ -39,7 +43,7 @@ else
 }
 
 int startIndex = 0;
-if (isUser)
+if (isUser && !loadLastSession)
 {
     Console.WriteLine($"Urls: {urls.Count}, Start from?(0-{urls.Count})");
     startIndex = int.Parse(Console.ReadLine()??"0");
@@ -51,7 +55,7 @@ else
 
 ProductParcer productParcer = new ProductParcer();
 
-var responseParsing = await productParcer.Parse(urls.ToArray(),isUser,startIndex);
+var responseParsing = await productParcer.Parse(urls.ToArray(),isUser,startIndex,loadLastSession);
 
 Console.WriteLine($"Black urls:{responseParsing.BlackListUrls.Count}\nProducts:{responseParsing.Products.Count}");
 bool needSave;

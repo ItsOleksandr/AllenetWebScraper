@@ -11,7 +11,6 @@ public class SiteMapExtracter
             mappedUrls.AddRange(await ExtractFromUrl(url));
         }
         var uniqueUrls = mappedUrls.Distinct().ToList(); 
-        uniqueUrls.RemoveAll(x=>SaverExtensions.UrlsBlackList.Value.Contains(x));
         
         return uniqueUrls;
     }

@@ -22,15 +22,8 @@ public class ProductExtracter
             await Task.Delay(1000);
         }
 
-        var unAuthButton = _page.GetByText("Zaloguj się / Zarejestruj").First;
-        if (await unAuthButton.IsVisibleAsync())
-        {
-            await unAuthButton.ClickAsync();
-            await Task.Delay(4000);
-            await _page.Locator("#rememberme").SetCheckedAsync(true);
-            await _page.GetByText("Zaloguj się").First.ClickAsync();
-            await _page.GotoAsync(url, _gotoOptions);
-        }
+        await LogIn(url);
+        
 
         try
         {
@@ -111,6 +104,47 @@ public class ProductExtracter
                 throw new ProductAlreadyHandledException();
             }
         }
+    }
+
+    public async Task LogIn(string productUrl)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            var unAuthButton = _page.GetByText("Zaloguj się / Zarejestruj").First;
+            if (await unAuthButton.IsVisibleAsync())
+            {
+                await unAuthButton.ClickAsync();
+                await Task.Delay(4000);
+
+                var pressOptions = new LocatorPressSequentiallyOptions() { Delay = 200 };
+                var userName = _page.Locator("#username");
+                await userName.ClearAsync();
+                await userName.PressSequentiallyAsync(SaverExtensions.Creaditails.Value.Login, pressOptions);
+                var password = _page.Locator("#password");
+                await password.ClearAsync();
+                await password.PressSequentiallyAsync(SaverExtensions.Creaditails.Value.Password, pressOptions);
+
+                await _page.Locator("#rememberme").SetCheckedAsync(true);
+                
+
+                var frame = _page.Frames.FirstOrDefault(x => x.Url.Contains("cloudflare.com"));
+                if (frame != null)
+                {
+                    var captcha = frame.Locator("input[type='checkbox']");
+                    if (await captcha.IsVisibleAsync())
+                    {
+                        await captcha.ClickAsync();
+                    }
+                }
+                await _page.GetByText("Zaloguj się").First.ClickAsync();
+                await Task.Delay(2000);
+                await _page.GotoAsync(productUrl, _gotoOptions);
+                await Task.Delay(2000);
+                if (!await unAuthButton.IsVisibleAsync()) break;
+            }
+        }
+
+        throw new MemberAccessException("Can`t log in");
     }
 }
 

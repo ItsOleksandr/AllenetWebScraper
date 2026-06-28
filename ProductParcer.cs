@@ -30,7 +30,7 @@ public class ProductParcer
         return browser;
     }
     
-    public async Task<ParseResponse> Parse(string[] urls,bool isUserStarts,int startIndex = 0)
+    public async Task<ParseResponse> Parse(string[] urls,bool isUserStarts,int startIndex = 0,bool loadLastSession = true)
     {
         var browser = await CreateBrowserContext(!isUserStarts);
         var page = await browser.NewPageAsync();
@@ -38,6 +38,12 @@ public class ProductParcer
         ProductExtracter extracter = new ProductExtracter(page);
         string pathForSaveSession = Path.Combine(Directory.GetCurrentDirectory(),"Resources","last_parse.txt");
         var response = new ParseResponse();
+        if (loadLastSession)
+        {
+            response = LoadSession(pathForSaveSession);
+            startIndex = response.Products.Count-1;
+        }
+        
         for(int i = startIndex; i < urls.Length; i++)
         {
             var url = urls[i];
@@ -75,6 +81,12 @@ public class ProductParcer
     {
         var content = JsonSerializer.Serialize(response);
         File.WriteAllText(path, content);
+    }
+    public ParseResponse LoadSession(string path)
+    {
+        var content = File.ReadAllText(path);
+        var response = JsonSerializer.Deserialize<ParseResponse>(content);
+        return response ?? new ParseResponse();
     }
 }
 
